@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.yifei0727"
-version = "1.0-SNAPSHOT"
+version = "0.0.3-toy"
 
 repositories {
     mavenCentral()
@@ -46,7 +46,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("222")
-        untilBuild.set("232.*")
+        untilBuild.set("241.*")
     }
 
     signPlugin {
