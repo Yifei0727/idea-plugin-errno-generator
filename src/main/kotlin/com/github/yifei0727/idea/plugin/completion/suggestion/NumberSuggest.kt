@@ -8,17 +8,17 @@ import kotlin.math.pow
 // 当需要输入的类型为 int 时时，自动获取当前文件中的所有 errno 值 然后生成一个新的 提示
 object NumberSuggest {
     /* 最佳的匹配方式是 每个文件头部都有一个类似  文件编号建议固定4位数字
-        # 0012
-        // 0013
-        之类的格式注释 用来标记当前文件的 errno 值的起始值
+     *   file# 0012
+     *   // 0013
+     *   之类的格式注释 用来标记当前文件的 errno 值的起始值
      */
-    private val regex = Regex("\\s*^[#/*]+\\s*([0-9]{3,4})\\s*$")
+    private val regex = Regex(".*[fF][iI][lL][eE]_?(([iI][dD])|([nN][oO]))?[#:/*]+\\s*([0-9]{3,4})\\s*$")
 
     private fun scanPrefixNumTagFromCode(currentCodeText: String): String? {
         return currentCodeText.split("\n")
             .map { it.trim() }
             .firstOrNull { regex.matches(it) }
-            ?.let { regex.find(it)?.groups?.get(1)?.value }
+            ?.let { regex.find(it)?.groups?.get(4)?.value }
     }
 
     fun suggest(text: String): List<String> {
@@ -41,9 +41,11 @@ object NumberSuggest {
             return emptyList()
         }
         // 读取当前文件中的所有 errno 值
-        val patternString = "[^0-9]*([0-9]{$length}_[0-9]{$length})[^0-9]*"
+        val patternString = "[^0-9]+([0-9]{$length}_[0-9]{$length})[^0-9]*"
         val regex = Regex(patternString)
-        val matchResult = regex.findAll(text).map { it.groups[1] }.map { it?.value }
+        val matchResult = text.split("\n").flatMap { it ->//regex.findAll(text).map { it.groups[1] }.map { it?.value }
+            regex.findAll(it)
+        }.map { it.groups[1]?.value }
         // 去重复
         val errnoList = matchResult.distinct()
         // 排序
@@ -98,7 +100,7 @@ object NumberSuggest {
                     .filterNotNull()
                     .distinct()
                     .map { it.toInt() }
-                // 生成1个 顺序的eio 和一个随机的eid
+                // 生成1个 顺序的eid 和一个随机的eid
                 generateSuffix(errnoListSortedSuffix, length, true)?.let {
                     retList.add(prefix + "_" + StringUtil.padLeftZero(it, length))
                 }
